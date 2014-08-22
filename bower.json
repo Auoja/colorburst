@@ -1,0 +1,22 @@
+{
+  "name": "colorburst",
+  "main": "colorburst.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/Auoja/colorburst",
+  "authors": [
+    "antonauoja@gmail.com"
+  ],
+  "description": "A simple JavaScript image color extractor.",
+  "keywords": [
+    "color",
+    "image",
+    "javascript",
+    "colorburst"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "demo"
+  ]
+}
