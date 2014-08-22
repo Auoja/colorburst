@@ -1,0 +1,106 @@
+<!doctype html>
+<html ng-app="app">
+    <head>
+
+        <meta charset="utf-8" />
+
+        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Gudea:400,700" />
+        <link rel="stylesheet" href="style.css" />
+
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-resource.js"></script>
+        <script src="../colorburst.js"></script>
+
+        <script>
+
+            var app = angular.module('app', ['ngResource']);
+
+            app.filter("asDate", function () {
+                return function (input) {
+                    return new Date(input * 1000);
+                }
+            });
+
+            app.factory('imgur', ['$http', function($http) {
+                return function() {
+                    var url = 'https://api.imgur.com/3/gallery/r/foodporn';
+                    return $http.get(url, {
+                        headers: {
+                            'Authorization' : 'Client-ID f6a30f8817dfaa1'
+                        }
+                    });
+                };
+            }]);
+
+
+            app.factory('colorBurst', function ($rootScope) {
+                return function(url) {
+
+                    var image = new Image();
+                    var colors = {};
+
+                    image.addEventListener('load', function() {
+                        $rootScope.$apply(function() {
+                            var result = ColorBurst.extractColors({
+                                image: image,
+                                useThumbnail: true
+                            });
+                            Object.keys(result).forEach(function(key) {
+                                colors[key] = result[key];
+                            });
+                        } );
+                    } );
+
+                    image.crossOrigin = 'Anonymous';
+                    image.src = url;
+
+                    return colors;
+                };
+            } )
+
+            app.controller('main', ['$scope', 'imgur', 'colorBurst', function ($scope, imgur, colorBurst) {
+
+                imgur().then(function(response) {
+
+                    var data = response.data.data.splice(0, 10);
+
+                    $scope.images = data.map(function(imageData) {
+                        var imageUrl = imageData.link;
+
+                        return {
+                            name: imageData.title,
+                            date: imageData.datetime,
+                            url: imageUrl,
+                            score: imageData.score,
+
+                            colors: colorBurst(imageUrl)
+                        };
+                    });
+
+                });
+            }]);
+
+        </script>
+
+    </head>
+    <body ng-controller="main">
+
+        <div ng-repeat="image in images" class="container" ng-style="{ 'background' : image.colors.backgroundColor }">
+            <div class="text-container">
+                <h1 ng-style="{color: image.colors.centerColors[0]}">
+                    {{ image.name }}
+                </h1>
+                <p ng-style="{color: image.colors.centerColors[1]}">
+                    Posted: <span ng-style="{color: image.colors.centerColors[2]}">{{ image.date | asDate | date:'shortDate' }}</span>
+                </p>
+                <p ng-style="{color: image.colors.centerColors[1]}">
+                    Score: <span ng-style="{color: image.colors.centerColors[2]}">{{ image.score }}</span>
+                </p>
+            </div>
+            <div class="image-container">
+                <img ng-src="{{ image.url }}" class="cover" />
+            </div>
+        </div>
+
+    </body>
+</html>
