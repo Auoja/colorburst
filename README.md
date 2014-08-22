@@ -1,0 +1,4 @@
+colorburst
+==========
+
+JavaScript color extractor
